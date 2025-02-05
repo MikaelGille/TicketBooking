@@ -3,8 +3,10 @@ namespace TicketBookingCore
 {
     public class TicketBookingRequestProcessor
     {
+        private readonly ITicketBookingRepository _ticketBookingRepository;
         public TicketBookingRequestProcessor(ITicketBookingRepository ticketBookingRepository)
         {
+            _ticketBookingRepository = ticketBookingRepository;
         }
 
         public TicketBookingResponse Book(TicketBookingRequest request)
@@ -13,7 +15,16 @@ namespace TicketBookingCore
             {
                 throw new ArgumentNullException(nameof(request));
             }
-            //  Refractor
+
+            var booking = new TicketBooking
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email
+            };
+
+            _ticketBookingRepository.Save(booking);
+
             return new TicketBookingResponse
             {
                 FirstName = request.FirstName,
