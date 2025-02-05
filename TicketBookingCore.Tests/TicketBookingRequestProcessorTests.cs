@@ -17,22 +17,13 @@ namespace TicketBookingCore.Tests
         public void ShouldReturnTicketBookingResultWithRequestValues()
         {
             // Arrange
-
-            var request = new TicketBookingRequest
-            {
-                FirstName = "Förnamn",
-                LastName = "Efternamn",
-                Email = "email@email.com"
-            };
+            var request = CreateBookingRequest();
 
             // Act
-            TicketBookingResponse response = _processor.Book(request);
+            var response = _processor.Book(request);
 
             // Assert
-            Assert.NotNull(response);
-            Assert.Equal(request.FirstName, response.FirstName);
-            Assert.Equal(request.LastName, response.LastName);
-            Assert.Equal(request.Email, response.Email);
+            BookingMatchesRequest(response,  request);
         }
 
         [Fact]
@@ -49,28 +40,34 @@ namespace TicketBookingCore.Tests
         public void ShouldSaveToDatabase()
         {
             // Arrange
-            TicketBooking savedTicketBooking = null;
+            TicketBooking savedBooking = null;
 
-            // Setup the Save method to capture the saved ticket booking
-            _ticketBookingRepositoryMock.Setup(x => x.Save(It.IsAny<TicketBooking>()))
-            .Callback<TicketBooking>((ticketBooking) =>
-            {
-                savedTicketBooking = ticketBooking;
-            });
-            var request = new TicketBookingRequest
-            {
-                FirstName = "Förnamn",
-                LastName = "Efternamn",
-                Email = "email@email.com"
-            };
+            _ticketBookingRepositoryMock
+                .Setup(repo => repo.Save(It.IsAny<TicketBooking>()))
+                .Callback<TicketBooking>(booking => savedBooking = booking);
+
+            var request = CreateBookingRequest();
+
             // Act
-            TicketBookingResponse response = _processor.Book(request);
+            var response = _processor.Book(request);
 
             // Assert
-            Assert.NotNull(savedTicketBooking);
-            Assert.Equal(request.FirstName, savedTicketBooking.FirstName);
-            Assert.Equal(request.LastName, savedTicketBooking.LastName);
-            Assert.Equal(request.Email, savedTicketBooking.Email);
+            Assert.NotNull(savedBooking);
+            BookingMatchesRequest(savedBooking, request);
+        }
+
+        private TicketBookingRequest CreateBookingRequest() => new()
+        {
+            FirstName = "Förnamn",
+            LastName = "Efternamn",
+            Email = "email@email.com"
+        };
+
+        private void BookingMatchesRequest(TicketBookingBase booking, TicketBookingRequest request)
+        {
+            Assert.Equal(request.FirstName, booking.FirstName);
+            Assert.Equal(request.LastName, booking.LastName);
+            Assert.Equal(request.Email, booking.Email);
         }
     }
 }

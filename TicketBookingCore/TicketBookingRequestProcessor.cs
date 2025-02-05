@@ -4,6 +4,7 @@ namespace TicketBookingCore
     public class TicketBookingRequestProcessor
     {
         private readonly ITicketBookingRepository _ticketBookingRepository;
+
         public TicketBookingRequestProcessor(ITicketBookingRepository ticketBookingRepository)
         {
             _ticketBookingRepository = ticketBookingRepository;
@@ -16,20 +17,18 @@ namespace TicketBookingCore
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var booking = new TicketBooking
+            _ticketBookingRepository.Save(Create<TicketBooking>(request));
+
+            return Create<TicketBookingResponse>(request);
+        }
+
+        private static T Create<T>(TicketBookingRequest request) where T : TicketBookingBase, new()
+        {
+            return new T
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                Email = request.Email
-            };
-
-            _ticketBookingRepository.Save(booking);
-
-            return new TicketBookingResponse
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Email = request.Email
+                Email = request.Email,
             };
         }
     }
